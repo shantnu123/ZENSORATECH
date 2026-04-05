@@ -1,51 +1,37 @@
-let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+const container = document.getElementById("userContainer");
+const errorMsg = document.getElementById("errorMsg");
 
-const input = document.getElementById("taskInput");
-const addBtn = document.getElementById("addBtn");
-const list = document.getElementById("taskList");
+async function fetchUsers() {
+    try {
+        const response = await fetch("https://jsonplaceholder.typicode.com/users");
 
-function renderTasks() {
-    list.innerHTML = "";
+        if (!response.ok) {
+            throw new Error("API Error");
+        }
 
-    tasks.forEach((task, index) => {
-        const li = document.createElement("li");
+        const users = await response.json();
+        displayUsers(users);
 
-        li.innerHTML = `
-            <span class="${task.completed ? 'completed' : ''}">
-                ${task.text}
-            </span>
-            <button class="delete-btn">X</button>
-        `;
-
-        
-        li.querySelector("span").addEventListener("click", () => {
-            tasks[index].completed = !tasks[index].completed;
-            renderTasks();
-        });
-
-        
-        li.querySelector("button").addEventListener("click", () => {
-            tasks.splice(index, 1);
-            renderTasks();
-        });
-
-        list.appendChild(li);
-    });
-
-    localStorage.setItem("tasks", JSON.stringify(tasks));
+    } catch (error) {
+        errorMsg.textContent = "Failed to load data. Please try again.";
+        console.error(error);
+    }
 }
 
+function displayUsers(users) {
+    users.forEach(user => {
+        const card = document.createElement("div");
+        card.classList.add("card");
 
-addBtn.addEventListener("click", () => {
-    if (input.value.trim() === "") return;
+        card.innerHTML = `
+            <h3>${user.name}</h3>
+            <p>Email: ${user.email}</p>
+            <p>City: ${user.address.city}</p>
+        `;
 
-    tasks.push({
-        text: input.value,
-        completed: false
+        container.appendChild(card);
     });
+}
 
-    input.value = "";
-    renderTasks();
-});
-
-renderTasks();
+// call function
+fetchUsers();
